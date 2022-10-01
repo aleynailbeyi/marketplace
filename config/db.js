@@ -89,21 +89,25 @@ const getProducts = (request, response) => {
     })
   }
   
- /*const updateOrder = (request, response) => {
-    const id = parseInt(request.params.id)
-    const { order_id, product_id } = request.body
+ const createOrder = (request, response) => {
+    const { id, order_id, product_id } = request.body
   
-    pool.query(
-      'UPDATE order_products SET order_id = $1, product_id = $2 WHERE id = $3',
-      [order_id, product_id, id],
-      (error, results) => {
-        if (error) {
-          throw error
-        }
-        response.status(200).send(`Order modified with ID: ${id}`)
+    pool.query('INSERT INTO order_products (id, order_id, product_id) VALUES ($1, $2, $3) RETURNING *', [id, order_id, product_id], (error, results) => {
+      if (error) {
+        throw error
       }
-    )
-  }*/
+      response.status(201).send(`Product added with ID: ${id}`)
+    })
+  }
+  const getOrderProducts = (request, response) => {
+    pool.query('SELECT * FROM order_products ORDER BY id ASC', (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(200).json(results.rows)
+    })
+  }
+
 
 module.exports = {
     query: (text, params) => pool.query(text, params),
@@ -114,5 +118,6 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
-    //updateOrder
+    createOrder,
+    getOrderProducts
   }

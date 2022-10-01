@@ -21,6 +21,9 @@ app.get('/orders/:id', db.getOrdersById)
 app.post('/products', db.createProduct)
 app.put('/products/:id', db.updateProduct)
 app.delete('/products/:id', db.deleteProduct)
+app.post('/order_products', db.createOrder)
+app.get('/order_products', db.getOrderProducts)
+
 
 app.listen(port, () => {
     console.log(`App running on port ${port}.`)
