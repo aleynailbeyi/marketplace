@@ -1,21 +1,118 @@
 const Pool = require('pg').Pool
-const pool = new Pool({
+const dotenv = require('dotenv');
+dotenv.config();
+
+/*const pool = new Pool({
   user: 'marketplace_user',
   host: 'localhost',
   database: 'marketplacedb',
   password: 'postgres',
   port: 5432,
-})
+}) */
 
-const getProducts = (request, response) => {
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL
+  });
+  pool.on('connect', () => {
+    console.log('Db connected successfully!');
+  });
+
+  const getCustomer = (request, response) => {
     pool.query('SELECT * FROM customer ORDER BY id ASC', (error, results) => {
       if (error) {
         throw error
       }
       response.status(200).json(results.rows)
     })
+  } 
+const getProducts = (request, response) => {
+    pool.query('SELECT * FROM products ORDER BY id ASC', (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(200).json(results.rows)
+    })
+  }
+  const getOrders = (request, response) => {
+    pool.query('SELECT * FROM orders ORDER BY id ASC', (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(200).json(results.rows)
+    })
+  }
+  const getOrdersById = (request, response) => {
+    const id = parseInt(request.params.id)
+  
+    pool.query('SELECT * FROM orders WHERE id = $1', [id], (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(200).json(results.rows)
+    })
+  }
+  const createProduct = (request, response) => {
+    const { id, name, price } = request.body
+  
+    pool.query('INSERT INTO products (id, name, price) VALUES ($1, $2, $3) RETURNING *', [id, name, price], (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(201).send(`Product added with ID: ${id}`)
+    })
   }
 
-  module.exports = {
+  const updateProduct = (request, response) => {
+    const id = parseInt(request.params.id)
+    const { name, price } = request.body
+  
+    pool.query(
+      'UPDATE products SET name = $1, price = $2 WHERE id = $3',
+      [name, price, id],
+      (error, results) => {
+        if (error) {
+          throw error
+        }
+        response.status(200).send(`Product modified with ID: ${id}`)
+      }
+    )
+  }
+
+  const deleteProduct = (request, response) => {
+    const id = parseInt(request.params.id)
+  
+    pool.query('DELETE FROM products WHERE id = $1', [id], (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(200).send(`Product deleted with ID: ${id}`)
+    })
+  }
+  
+ /*const updateOrder = (request, response) => {
+    const id = parseInt(request.params.id)
+    const { order_id, product_id } = request.body
+  
+    pool.query(
+      'UPDATE order_products SET order_id = $1, product_id = $2 WHERE id = $3',
+      [order_id, product_id, id],
+      (error, results) => {
+        if (error) {
+          throw error
+        }
+        response.status(200).send(`Order modified with ID: ${id}`)
+      }
+    )
+  }*/
+
+module.exports = {
+    query: (text, params) => pool.query(text, params),
+    getCustomer,
     getProducts,
+    getOrders,
+    getOrdersById,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    //updateOrder
   }
