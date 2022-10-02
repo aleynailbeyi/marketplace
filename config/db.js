@@ -89,18 +89,8 @@ const getProducts = (request, response) => {
     })
   }
   
- const createOrder = (request, response) => {
-    const { id, order_id, product_id } = request.body
-  
-    pool.query('INSERT INTO order_products (id, order_id, product_id) VALUES ($1, $2, $3) RETURNING *', [id, order_id, product_id], (error, results) => {
-      if (error) {
-        throw error
-      }
-      response.status(201).send(`Product added with ID: ${id}`)
-    })
-  }
   const getOrderProducts = (request, response) => {
-    pool.query('SELECT * FROM order_products ORDER BY id ASC', (error, results) => {
+    pool.query('SELECT * FROM order_products INNER JOIN orders ON order_products.order_id=orders.id', (error, results) => {
       if (error) {
         throw error
       }
@@ -118,6 +108,5 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
-    createOrder,
     getOrderProducts
   }
